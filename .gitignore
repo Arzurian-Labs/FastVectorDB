@@ -1,0 +1,19 @@
+# Build directories
+cmake-build-*/
+build/
+bin/
+lib/
+
+# Compiled objects and libraries
+*.o
+*.so
+*.a
+*.dylib
+*.dll
+fastvectordb_cli
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.user

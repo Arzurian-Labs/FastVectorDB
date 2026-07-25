@@ -1,0 +1,99 @@
+= FastVectorDB: High-Performance Vector Memory Engine for AI Agents
+:toc: left
+:toclevels: 3
+:icons: font
+:sectnums:
+:source-highlighter: highlight.js
+
+== Executive Summary
+
+*FastVectorDB* is a lightweight, ultra-fast, in-memory vector database and semantic memory store written in modern C++ (C++20). It is designed to serve as a low-latency memory component for local AI agents, offering high-throughput vector similarity search, SIMD acceleration, memory-mapped persistence, and a clean C-ABI for integration with external host systems.
+
+== Architecture Overview
+
+The system is designed with a decoupled 4-layer architecture:
+
+[plantuml, format="png"]
+....
++-------------------------------------------------------+
+|            C-ABI Layer (libvector_db.so)              |
+|        Exposes extern "C" functions for bindings      |
++---------------------------+---------------------------+
+                            |
++---------------------------v---------------------------+
+|               VectorStore Core Engine                 |
+|      Manages contiguous memory, IDs, and metadata    |
++-------------+---------------------------+-------------+
+              |                           |
++-------------v-------------+ +-----------v-------------+
+|    SIMD Math Subsystem    | | Storage & Persistence   |
+| (AVX2 / FMA Dot Products) | |  (mmap Zero-Copy I/O)   |
++---------------------------+ +-------------------------+
+....
+
+== Core Modules
+
+=== 1. Memory Layout & Storage Core (`include/fastvectordb/vector_store.hpp`)
+* **Contiguous Float Buffer:** Eliminates pointer chasing by storing vector data in a single contiguous flat array.
+* **Cache Alignment:** 64-byte alignment (`alignas(64)`) to match CPU cache lines and SIMD AVX2/AVX-512 register loads.
+* **Metadata Table:** Separate hash map / payload store mapping vector IDs to text content and timestamps.
+
+=== 2. SIMD Distance Engine (`include/fastvectordb/simd_math.hpp`)
+* **AVX2 / FMA Acceleration:** Processes 8 single-precision floats per instruction using 256-bit vector registers (`__m256`).
+* **Cosine Similarity & L2 Distance:** Fused Multiply-Add loop for dot product calculations.
+* **Scalar Fallback:** Standard C++ loop fallback when AVX2 hardware flags are not present.
+
+=== 3. Binary Persistence & `mmap` (`include/fastvectordb/persistence.hpp`)
+* **Zero-Copy File Mapping:** Direct binary `mmap` system calls to load indices into memory without parsing.
+* **Binary Header:** Magic bytes (`VECDB`), dimension count, total vector count, and precision flags.
+
+=== 4. C-ABI Gateway (`include/fastvectordb/c_api.h`)
+* **Standard C Exports:** `extern "C"` functions (`vdb_create`, `vdb_insert`, `vdb_search_knn`, `vdb_destroy`).
+* **FFI Ready:** Compatible with Python `ctypes`/`cffi`, Rust, or any local agent framework.
+
+== Directory Layout
+
+[source]
+----
+FastVectorDB/
+├── ARCHITECTURE.adoc         <-- This document
+├── CMakeLists.txt            <-- Build configuration script
+├── include/                  <-- Public header files
+│   └── fastvectordb/
+│       ├── c_api.h
+│       ├── persistence.hpp
+│       ├── simd_math.hpp
+│       └── vector_store.hpp
+├── src/                      <-- Implementation source files
+│   ├── c_api.cpp
+│   ├── main.cpp              <-- CLI test runner
+│   ├── persistence.cpp
+│   ├── simd_math.cpp
+│   └── vector_store.cpp
+├── tests/                    <-- Unit tests (GoogleTest)
+└── benchmarks/               <-- Performance microbenchmarks
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Infrastructure & Project Skeleton
+- [ ] Create folder structure and headers.
+- [ ] Configure `CMakeLists.txt` with C++20 standard, target definitions, and build flags (`-O3 -march=native -mavx2`).
+- [ ] Set up basic CLI runner target.
+
+=== Phase 2: Memory Storage & Vector Operations
+- [ ] Implement aligned buffer memory layout in `VectorStore`.
+- [ ] Add basic CRUD operations (`insert`, `get`, `size`).
+
+=== Phase 3: SIMD Acceleration Engine
+- [ ] Implement scalar cosine similarity.
+- [ ] Implement AVX2/FMA vectorized dot-product math.
+- [ ] Benchmark QPS comparing scalar vs AVX2 implementations.
+
+=== Phase 4: Binary Persistence (`mmap`)
+- [ ] Implement binary serialization/deserialization to file.
+- [ ] Add memory-mapped file loading for zero-copy initialization.
+
+=== Phase 5: C-ABI & Integration
+- [ ] Expose `extern "C"` functions in `c_api.h` and `c_api.cpp`.
+- [ ] Test shared library loading from a Python test script.
