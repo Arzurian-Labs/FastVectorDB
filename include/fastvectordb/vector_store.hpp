@@ -21,6 +21,11 @@ namespace fastvectordb {
         // Insertion Method
         void insert(std::uint64_t id, const std::vector<float>& vec);
 
+        // Accessors for the SIMD and Query Engine
+        const float* get_vector(std::size_t index) const;
+        const float* data() const;
+        const std::vector<std::uint64_t>& ids() const;
+
     private:
         std::size_t dimension_;
         std::vector<float> data_;

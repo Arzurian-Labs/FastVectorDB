@@ -33,5 +33,23 @@ namespace fastvectordb {
         data_.insert(data_.end(), vec.begin(), vec.end());
         ids_.push_back(id);
     }
+
+    // Getting the pointer to float array for vector at a specific index
+    const float* VectorStore::get_vector(std::size_t index) const {
+        if (index >= ids_.size()) {
+            throw std::out_of_range("VectorStore::get_vector: index out of range.");
+        }
+        return &data_[index * dimension_];
+    }
+
+    // Get the pointer to the raw underlying contiguous float buffer
+    const float* VectorStore::data() const {
+        return data_.data();
+    }
+
+    // Get reference to vector IDs list
+    const std::vector<std::uint64_t>& VectorStore::ids() const {
+        return ids_;
+    }
 }
 
