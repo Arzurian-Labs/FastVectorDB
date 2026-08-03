@@ -8,7 +8,8 @@ FastVectorDB is a high-performance, low-latency in-memory vector database engine
 
 - **Contiguous Memory Layout**: Aligned float buffer storing high-dimensional vectors back-to-back in contiguous memory to eliminate pointer-chasing and maximize CPU cache line efficiency.
 - **SIMD Hardware Acceleration**: Target support for AVX2/FMA (x86_64) and ARM NEON SIMD vector instruction sets.
-- **C++20 Architecture**: Modern type safety, capacity pre-allocation, and dimension validation.
+- **k-NN Vector Similarity Search**: Top-k similarity search utilizing SIMD-accelerated Cosine Similarity and `std::partial_sort`.
+- **C++20 Architecture**: Modern type safety, capacity pre-allocation, `[[nodiscard]]`, and dimension validation.
 - **Zero-Copy Persistence**: Binary serialization and memory-mapped file loading (`mmap`).
 - **C-ABI Gateway**: FFI ready exports for Python and local AI runtime integration.
 
@@ -21,6 +22,7 @@ FastVectorDB/
 ├── CMakeLists.txt            # CMake build configuration script
 ├── README.md                 # Project overview and documentation
 ├── ARCHITECTURE.adoc         # Detailed architecture design specification
+├── SIMD_INTRINSICS_GUIDE.md  # SIMD architecture and intrinsics reference guide
 ├── include/                  # Header files
 │   └── fastvectordb/
 │       ├── vector_store.hpp  # Contiguous vector storage engine
@@ -55,5 +57,6 @@ cmake --build build
 ## Documentation Logs
 
 - [`ARCHITECTURE.adoc`](ARCHITECTURE.adoc) — System design and module specifications.
+- [`SIMD_INTRINSICS_GUIDE.md`](SIMD_INTRINSICS_GUIDE.md) — SIMD architecture and intrinsics reference guide.
 - [`PROGRESS_2026_07_24.md`](PROGRESS_2026_07_24.md) — Initial build system and storage core implementation log.
-- [`PROGRESS_2026_08_02.md`](PROGRESS_2026_08_02.md) — Contiguous memory accessors development log.
+- [`PROGRESS_2026_08_02.md`](PROGRESS_2026_08_02.md) — Contiguous memory accessors and SIMD k-NN search development log.

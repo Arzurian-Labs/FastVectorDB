@@ -27,6 +27,18 @@ int main() {
         std::cout << "Catch expected error: " << e.what() << std::endl;
     }
 
+    // Perform SIMD k-NN Query for {1.0f, 2.0f, 3.0f)
+    std::vector<float> query = {1.0f, 2.0f, 3.0f};
+    std::size_t k = 2;
+
+    std::cout << "Running SIMD k-NN Search for Top-" << k << "matches..." << std::endl;
+    auto topMatches = store.search_knn(query,k);
+
+    for (std::size_t i = 0; i < topMatches.size(); ++i) {
+        std::cout << "Rank " << (i + 1) << "Vector ID: " << topMatches[i].first
+        << "Cosine Similarity Score: " << topMatches[i].second << std::endl;
+    }
+
     // Verify that all tests are completed
     std::cout << "FastVectorDB Engine Initialized successfully." << std::endl;
 

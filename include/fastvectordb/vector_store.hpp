@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector> // If necessary for storages
 #include <cstdint> // Required for std::uint64_t to work
+#include <utility>
 
 // VectorStore class header will be implemented here.
 
@@ -25,6 +26,11 @@ namespace fastvectordb {
         const float* get_vector(std::size_t index) const;
         const float* data() const;
         const std::vector<std::uint64_t>& ids() const;
+
+        // k-Nearest neighbor similarity search
+        [[nodiscard]] std::vector<std::pair<std::uint64_t, float>> search_knn(
+            const std::vector<float>& query, std::size_t k
+        ) const;
 
     private:
         std::size_t dimension_;

@@ -1,6 +1,10 @@
 #include "fastvectordb/vector_store.hpp"
+
+#include <algorithm>
 #include <stdexcept>
 #include <cstdint> // Required for uint64_t
+
+#include "fastvectordb/simd_math.hpp"
 
 // Implementation of VectorStore class methods will go here.
 
@@ -51,5 +55,36 @@ namespace fastvectordb {
     const std::vector<std::uint64_t>& VectorStore::ids() const {
         return ids_;
     }
+
+    std::vector<std::pair<std::uint64_t, float> > VectorStore::search_knn(const std::vector<float> &query,
+        std::size_t k) const {
+        if (query.size() != dimension_) {
+            throw std::invalid_argument("VectorStore::search: query size does not match dimension.");
+        }
+        if (k == 0 || size() == 0) {
+            return {};
+        }
+
+        // Cosine Similarity calculation for every stored vectors using SIMD Math
+        std::vector<std::pair<std::uint64_t, float>> result;
+        result.reserve(size());
+
+        for (std::size_t i = 0; i < size(); ++i) {
+            const float* vecPtr = get_vector(i);
+            float score = cosineSimilarity(query.data(), vecPtr, dimension_);
+            result.push_back({ids_[i], score});
+        }
+
+        // Using similarity scores to sort in the descending order.
+        std::size_t topK = std::min(k, result.size());
+        std::partial_sort(result.begin(), result.begin() + topK, result.end(),
+            [](const auto& a, const auto& b) {
+                return a.second > b.second;
+            }
+        );
+        result.resize(topK);
+        return result;
+    };
+
 }
 
