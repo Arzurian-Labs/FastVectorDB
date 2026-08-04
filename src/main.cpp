@@ -6,11 +6,10 @@
 #include "fastvectordb/c_api.h"
 
 int main() {
-    std::cout << "==================================================" << std::endl;
-    std::cout << "   🚀 FastVectorDB Engine Full 5-Phase Test Runner" << std::endl;
-    std::cout << "==================================================" << std::endl;
+    std::cout << "FastVectorDB Engine Automated Test Runner" << std::endl;
+    std::cout << "-----------------------------------------" << std::endl;
 
-    // 1. Core VectorStore Initialization & Insertion (Phases 1 & 2)
+    // 1. VectorStore Initialization and Vector Insertion
     fastvectordb::VectorStore store(3, 10);
     std::cout << "Initialized Store. Dimension: " << store.dimension()
               << ", Initial Size: " << store.size() << std::endl;
@@ -19,34 +18,34 @@ int main() {
     store.insert(102, {4.0f, 5.0f, 6.0f});
     std::cout << "Inserted 2 vectors. Updated Size: " << store.size() << std::endl;
 
-    // Dimension validation check
+    // Guard clause dimension check
     try {
-        store.insert(103, {1.0f, 2.0f}); // Mismatched dimension
+        store.insert(103, {1.0f, 2.0f});
     } catch (const std::exception& e) {
-        std::cout << "Caught expected guard clause error: " << e.what() << std::endl;
+        std::cout << "Caught expected dimension error: " << e.what() << std::endl;
     }
 
-    // 2. SIMD k-NN Vector Search (Phase 3)
+    // 2. SIMD k-NN Search
     std::vector<float> query = {1.0f, 2.0f, 3.0f};
     std::size_t k = 2;
-    std::cout << "\n--- Phase 3: SIMD k-NN Search (Top-" << k << ") ---" << std::endl;
+    std::cout << "\nRunning SIMD k-NN Search (Top-" << k << "):" << std::endl;
     auto topMatches = store.search_knn(query, k);
     for (std::size_t i = 0; i < topMatches.size(); ++i) {
         std::cout << "  Rank " << (i + 1) << " | Vector ID: " << topMatches[i].first
-                  << " | Cosine Similarity Score: " << topMatches[i].second << std::endl;
+                  << " | Cosine Similarity: " << topMatches[i].second << std::endl;
     }
 
-    // 3. Binary File Persistence (Phase 4)
+    // 3. Binary File Persistence
     std::string db_file = "/tmp/test_database.vdb";
-    std::cout << "\n--- Phase 4: Binary File Serialization ---" << std::endl;
+    std::cout << "\nTesting Binary Serialization:" << std::endl;
     fastvectordb::save_to_file(store, db_file);
-    std::cout << "Saved VectorStore to binary file: " << db_file << std::endl;
+    std::cout << "Saved VectorStore to file: " << db_file << std::endl;
 
     fastvectordb::VectorStore loaded_store = fastvectordb::load_from_file(db_file);
-    std::cout << "Loaded VectorStore from binary file. Size: " << loaded_store.size() << std::endl;
+    std::cout << "Loaded VectorStore from file. Vector Count: " << loaded_store.size() << std::endl;
 
-    // 4. C-ABI FFI Gateway (Phase 5)
-    std::cout << "\n--- Phase 5: C-ABI Gateway FFI ---" << std::endl;
+    // 4. C-ABI FFI Gateway
+    std::cout << "\nTesting C-ABI Gateway:" << std::endl;
     vdbStore_t c_handle = vdb_store_create(3, 10);
     float c_vec1[3] = {1.0f, 2.0f, 3.0f};
     float c_vec2[3] = {4.0f, 5.0f, 6.0f};
@@ -65,9 +64,6 @@ int main() {
     }
     vdb_destroy(c_handle);
 
-    std::cout << "\n==================================================" << std::endl;
-    std::cout << "✅ All 5 Phases of FastVectorDB Verified Cleanly!" << std::endl;
-    std::cout << "==================================================" << std::endl;
-
+    std::cout << "\nFastVectorDB Engine Execution Complete." << std::endl;
     return 0;
 }
